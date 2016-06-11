@@ -38,7 +38,7 @@ modules without breaking things along the way.
 
 #### 6. Don't fragment JS between browsers and node
 
-The implementation of ES modules should work identically in browsers and Node.
+ES modules should behave identically in browsers and Node.
 
 #### 7. Moving files should still work
 
