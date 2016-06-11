@@ -6,8 +6,8 @@ ES modules describe a couple of things:
   public interfaces from your modules: `import`, `export`.
 * New **language rules** that allow modules to expose live bindings as
   interface, which solves neatly solves the issue of circular dependencies.
-* **You don't have to type `"use strict"` anymore.** It's automatic, making
-  your JavaScript faster and safer *by default*.
+* **You don't have to type `"use strict"` anymore.** It's automatic in ES
+  modules, making your JavaScript faster and safer *by default*.
 
 ES modules pave the cowpath made by Node.js modules. Here is what they look
 like:
