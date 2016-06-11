@@ -1,6 +1,7 @@
 <div id="goals"><h3>What are our goals?</h3></div>
 
-Not all of these items are requirements, but they are articulated
+Not all of these are requirements, but they are goals that have come from
+various stakeholders.
 
 #### 1. Backwards compatibility
 
