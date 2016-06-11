@@ -33,4 +33,4 @@ Because both Node.js modules and ES modules are intended to solve the same
 problem, integrating the new syntax into Node.js has run into some problems.
 
 In particular, Node.js needs to identify whether a given file is a module of
-the ES or Node.js module variety before running it.
+the ES or Node.js variety before running it.
