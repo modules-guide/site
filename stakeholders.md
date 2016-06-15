@@ -1,7 +1,7 @@
 ### 3. who are the stakeholders?
 
-**The needs of the following groups of people form the goals that any proposed
-solution for integrating ES modules must fulfill.**
+**The needs of the following groups of people establish the goals that any
+proposed solution for integrating ES modules must fulfill.**
 
 **JavaScript Users:** This includes anyone who reads or writes JS for fun or
 profit, including Node.js users, frontend developers, and developers who
@@ -12,7 +12,7 @@ have been writing JS since its inception.
 
 **Implementors:** This includes the Node.js
 [CTC](https://github.com/nodejs/node#current-project-team-members) and
-colloborators, but also extends to browser implementors, alternate server-side
+collaborators, but also extends to browser implementors, alternate server-side
 JS implementors, tooling implementors *(such as ESLint, Browserify, Webpack, and
 Rollup)*, and toolchain implementors for other language ecosystems *(such as
 Ruby's Sprockets or PHP's Assetic.)*
