@@ -1,35 +1,66 @@
 ### 5. what are the proposed solutions?
 
-#### 1. double parsing
+#### 1. Double Parsing
 
-Under this approach, the file would be parsed twice.
-If an `import` or `export` statement is found, evaluate as an ES Module,
-or Node Module if there are none.
+Parse the file twice, accepting the first error-free result as the type of the
+module. One could either parse the file as a Script first or as a Module first.
 
-This is not currently possible because the spec is ambiguous,
-however it is possible that the spec may change in this regard.
+There are some issues with this approach:
 
-#### 2. directives ("use module")
+* Tooling authors have to implement a parse step in order to determine file
+  type. Not all languages have a JavaScript parser readily available.
+* It is valid to have an ES module with no `import` or `export` statements,
+  leading to the potential for ambiguity: if a file was intended to be
+  a Node.js module but parsed as an ES module, it could result different
+  `"use strict"` semantics being silently applied to the file, causing hard
+  to reason about behavior.
 
-This approach is actually possible, given that import statements must be top-level. (That is, not within evaluated code blocks.)
+#### 2. Directives (e.g., "use module")
 
-#### 3. magic bytes ("js:;")
+Determine the module type of the file by the presence or absence of a `"use
+module"` directive, defined and implemented *outside* of the JS specification.
 
-You write `js:;` at the beginning of a file to run as an ES Module.
+There are some issues with this approach:
 
-This eliminates the _major_ problem with the directives approach.
+* In order to accurately determine whether to parse the file as an ES module or a
+  Node.js module, one must first parse the file looking for directive statements.
+  *(Consider that a directive may be preceded by any number of lines of
+  whitespace or comments. A directive would not be able to be reliably detected
+  with a regular expression, and requires a full parser.)*
+* All future ES modules would have to contain `"use modules"`.
 
-#### 4. consumption defines type (no 1st class interop)
+#### 3. Magic Bytes (e.g., "js:;")
 
-In this approach, `import` is only able to import ES Modules,
-& `require()` only able to import Node Modules.
+A variant of the `"use module"` approach, minus the parse step. Instead of
+speculatively parsing the file to determine type, only examine the first four
+bytes of the file (after stripping any `#!/usr/bin/env node` lines). If `js:;`
+is present, the file will be parsed as an ES module, otherwise it will be a
+Node module. If evaluated in a browser context, `js:;` will parse as a labeled
+empty statement and be ignored.
 
-This also requires existing code to use something new & undecided to import
-any ES Modules.
+* This eliminates the problem of having to speculatively parse, but retains
+  (and exacerbates!) the problem of having to include an incantation at the top
+  of every new ES module.
+
+#### 4. Consumption defines type (no 1st class interop)
+
+In this approach, only `import` may consume ES Modules, and only `require()`
+may consume Node.js modules. The act of `import`-ing a file automatically
+sets the type of the target file to ES module.
+
+* If a file is consumed incorrectly, different `"use strict"` semantics may
+  be erroneously applied to the target file, potentially resulting in
+  hard-to-diagnose bugs that could spread to the rest of the program.
+* Entry points still need an indicator of which module type they are.
 
 #### 5. `package.json`
 
-You write external metadata in a `package.json` to determine file type.
+Metadata in an associated `package.json` determines whether a given file is a
+Node.js module or an ES module. In particular, a `"module"` key is introduced
+as an analogue of `"main"`. Packages containing only a `"module"` key will
+automatically parse all contained files as ES modules. Packages that contain
+both Node.js modules and ES modules may use a `"modules.root"` directive to
+indicate that only modules under a certain path are ES modules.
 
 ```json
 {
@@ -39,8 +70,47 @@ You write external metadata in a `package.json` to determine file type.
 }
 ```
 
-#### 6. extension (".mjs")
+More can be read about this proposal
+[here](https://github.com/dherman/defense-of-dot-js/blob/master/proposal.md).
 
-Use a new extension to have the file be run as an ES Module.
+* While this removes all ambiguity at parse time, it does so by
+  coupling files to a corresponding `package.json`. In order to determine
+  the module type of a given file, one must examine every directory up from
+  the file's location. For symlinked directories, what constitutes "up" may
+  depend on how the file is being viewed.
+* Moving a JS file from one directory to another may change how it is parsed
+  without any other action being taken on the file, by removing it from a path
+  including `package.json`.
+* `"modules.root"` introduces an abstraction between `require('x/y')` that may
+  result in `require('x/src/y')` being required, which may be difficult for
+  beginners to follow.
+* Care must be taken in implementing `"modules.root"` to avoid allowing the
+  new package root to be set outside of the current package.
+* It does not solve for standalone JS files.
 
-#### 7. don't implement
+#### 6. File Extension (".mjs")
+
+Use a new extension to indicate whether a file is an ES module (`.mjs`) or a
+Node.js module (`.js`).
+
+* Some servers may not be configured to serve `.mjs` files.
+* Frontend JavaScript authors may ignore the extension; thus creating an artificial
+  barrier between ES modules written for the browser and ES modules written for Node.js.
+* A social consideration: the `.js` extension is deeply loved by some users.
+
+#### 7. Disambiguate Modules from Scripts
+
+A variant of double parsing. This involves revising the JavaScript
+specification to require at least one `import` or `export` statement in order
+to parse a file as a module. This allows runtimes to double parse without fear
+of accidental `"use strict"` ambiguity.
+
+* It is unclear how browsers would implement this behavior.
+* It is subject to the same tooling considerations as the double parsing solution.
+
+#### 8. Don't Implement ES Modules
+
+Node.js could opt out of implementing ES modules entirely.
+
+* This is not ideal, as it potentially creates a rift between frontend module
+  authors and Node.js module authors.
