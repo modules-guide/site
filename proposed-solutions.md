@@ -22,10 +22,11 @@ module"` directive, defined and implemented *outside* of the JS specification.
 
 There are some issues with this approach:
 
-* A circular problem arises: in order to accurately determine whether to parse
-  the file as an ES module or a Node.js module, one must first parse the file
-  looking for directive statements *(Consider that a directive may be proceeded
-  by any number of lines of whitespace or comments.)*
+* In order to accurately determine whether to parse the file as an ES module or a
+  Node.js module, one must first parse the file looking for directive statements.
+  *(Consider that a directive may be preceded by any number of lines of
+  whitespace or comments. A directive would not be able to be reliably detected
+  with a regular expression, and requires a full parser.)*
 * All future ES modules would have to contain `"use modules"`.
 
 #### 3. Magic Bytes (e.g., "js:;")
@@ -72,7 +73,7 @@ indicate that only modules under a certain path are ES modules.
 More can be read about this proposal
 [here](https://github.com/dherman/defense-of-dot-js/blob/master/proposal.md).
 
-* While this removes all ambiguity at parse time, it does so by tightly
+* While this removes all ambiguity at parse time, it does so by
   coupling files to a corresponding `package.json`. In order to determine
   the module type of a given file, one must examine every directory up from
   the file's location. For symlinked directories, what constitutes "up" may
@@ -92,7 +93,6 @@ More can be read about this proposal
 Use a new extension to indicate whether a file is an ES module (`.mjs`) or a
 Node.js module (`.js`).
 
-* This requires the registration of a new MIME type.
 * Some servers may not be configured to serve `.mjs` files.
 * Frontend JavaScript authors may ignore the extension; thus creating an artificial
   barrier between ES modules written for the browser and ES modules written for Node.js.
